@@ -1,0 +1,144 @@
+<!doctype html><html lang="et"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lääneranna koolivõrgu prognoosid</title>
+<style>
+:root{--navy:#102b46;--muted:#64748b;--line:#dbe4ed;--bg:#f3f6fa}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:#19334c}
+header{background:var(--navy);color:white;padding:23px max(24px,calc((100vw - 1380px)/2))}
+header h1{font-size:clamp(23px,3vw,34px);margin:0}header p{margin:4px 0 0;color:#c4d6e5}
+.wrap{max-width:1380px;margin:auto;padding:24px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px}
+.panel,.block{background:white;border:1px solid var(--line);border-radius:14px;padding:20px}
+.panel{align-self:start;position:sticky;top:16px}label{display:block;font-weight:650;margin:14px 0 6px}
+select,input{width:100%;border:1px solid #c7d5e4;border-radius:9px;padding:10px;font:inherit;background:white;color:inherit}
+input[type=range]{padding:0;accent-color:#157bd5}button{background:var(--navy);color:white;border:0;border-radius:9px;padding:10px 16px;cursor:pointer;font:inherit}
+.content{min-width:0;display:grid;gap:18px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{padding:18px;background:#eaf0f6;border-radius:11px}
+.stat strong{font-size:30px;display:block}.stat small{color:#536b82}.block h2{font-size:19px;margin:0 0 15px}
+.flex{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0}.legend span{display:inline-flex;gap:5px;align-items:center}.dot{height:10px;width:10px;border-radius:3px;display:inline-block}
+.chart{width:100%;overflow:auto}.chart svg{min-width:680px;display:block}
+.scroll{overflow:auto;max-height:440px}table{border-collapse:collapse;width:100%;white-space:nowrap;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid #e5ebf1;padding:9px 12px;text-align:right}th:first-child,td:first-child{text-align:left}
+th{background:#f1f5f9;position:sticky;top:0}tr:hover td{background:#f8fafc}
+.note{color:var(--muted);font-size:13px;margin:12px 0 0}.footer{font-size:13px;color:#566d81}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;padding:12px}.panel{position:static}.stats{grid-template-columns:repeat(2,1fr)}}
+
+.map-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:12px}.map-toolbar select,.map-toolbar input{width:auto;max-width:260px}.map-toolbar label{margin:0;font-weight:500}.map-shell{border:1px solid #dbe4ed;background:#eef4f5;border-radius:12px;overflow:hidden;position:relative}.map-shell svg{display:block;width:100%;height:auto;min-height:360px;max-height:620px;touch-action:pan-y}.map-shell path{stroke:#fff;stroke-width:.75;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill-opacity .15s}.map-shell path:hover{stroke:#152b40;stroke-width:1.7}.map-shell circle{pointer-events:none}.map-info{font-size:13px;color:#475569;margin-top:9px}.map-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:12px 0}.map-legend span{display:inline-flex;align-items:center;gap:5px}.map-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}.map-tip{position:absolute;left:12px;bottom:12px;background:#fffefb;border:1px solid #dbe4ed;box-shadow:0 4px 16px #12283b22;padding:12px;border-radius:10px;max-width:310px;font-size:13px}.map-tip button{float:right;padding:2px 7px;margin-left:9px}.map-loading{padding:24px;text-align:center;color:#475569}.map-actions{display:flex;gap:7px}.map-actions button{padding:6px 11px}.map-shell .map-label{font-size:10px;fill:#19334c;paint-order:stroke;stroke:#fff;stroke-width:3px;pointer-events:none}
+</style></head><body>
+<header><h1>Lääneranna koolivõrgu prognoosid</h1><p>Kuus koolipiirkonda · külade andmed · 1. klassi astujate prognoos 2027–2033</p></header>
+<div class="wrap">
+<section class="panel"><h2 style="margin-top:0">Andmete filtrid</h2>
+<label for="region">Koolipiirkond</label><select id="region"><option value="">Kõik piirkonnad</option></select>
+<label for="year">Prognoosiaasta: <span id="yearLabel">2027</span></label><input type="range" id="year" min="2027" max="2033" value="2027" step="1">
+<label for="search">Otsi küla või asulat</label><input id="search" placeholder="Näiteks Koonga, Vatla...">
+<p class="note">Piirkondade jaotus on kinnitatud. Külad, mille kohta lähteandmetes rida puudub, on arvestatud nulliga.</p>
+</section>
+<div class="content">
+<div class="stats">
+<div class="stat"><strong id="selected">34</strong><small>1. klassi astujaid valitud aastal</small></div>
+<div class="stat"><strong id="total">253</strong><small>0–6-aastaseid kokku</small></div>
+<div class="stat"><strong id="villages">0</strong><small>asulat valikus</small></div>
+<div class="stat"><strong id="zeros">0</strong><small>asulat, kus 0 last</small></div>
+</div>
+<section class="block" id="mapSection"><div class="flex"><h2>Asulate kaart</h2><div class="map-actions"><button id="mapPlus" title="Suurenda">+</button><button id="mapMinus" title="Vähenda">−</button><button id="mapReset">Lähtesta</button></div></div>
+<div class="map-toolbar"><label for="mapMetric">Kaardil:</label><select id="mapMetric"><option value="year">Valitud aastal 1. klassi</option><option value="total">0–6-aastased kokku</option></select><label><input type="checkbox" id="mapLabels"> Koolide nimed</label><label for="geoUpload" style="cursor:pointer;text-decoration:underline">Laadi GeoJSON käsitsi</label><input type="file" id="geoUpload" accept=".json,.geojson,application/json" style="max-width:180px"></div>
+<div class="map-shell" id="mapShell"><div id="mapCanvas" class="map-loading">Laadin asulate geomeetriat. Diagrammid ja tabelid töötavad ka ilma kaardita.</div><div id="mapTip" class="map-tip" hidden></div></div><div id="mapLegend" class="map-legend"></div><p class="map-info" id="mapStatus">Kaardil on üksnes EHAK-i järgi Lääneranna valda kuuluvad asulad. Kui välisallikas ei avane, saad lisada GeoJSON-faili käsitsi.</p><p class="note">Kaardil on asulate halduspiirid, mitte koolide ametlikud teeninduspiirid. Asulaid valitakse ainult EHAK-i omavalitsuse tunnuse ONIMI = Lääneranna vald järgi. Metsküla ja Nurme puhul kontrollitakse ka EHAK-i asulakoodi.</p></section>
+<section class="block" id="stackedSection"><div class="flex"><h2>Kooliastujate prognoos 2027–2033</h2><button id="csv">Laadi andmed CSV-na</button></div><p class="note">Iga aasta üks virnastatud tulp. Koolipiirkonna või küla valimine muudab ka diagrammi; valitud aasta on esile tõstetud. Tulbal klõpsates saad aastat vahetada.</p><div class="chart" id="chart"></div><div class="legend" id="legend"></div></section>
+<section class="block"><h2>Koolipiirkondade prognoos 2027–2033</h2><div class="scroll" id="yearTable"></div></section>
+<section class="block"><h2>Külade vanuseandmed ja prognoos</h2><div class="scroll" id="villageTable"></div><p class="note">Vanused on lähteandmete seisuga 2026. aastal.</p></section>
+<p class="footer">Metoodika: 2027. aasta kooliastujad = 2026. aasta 6-aastased; 2033. aasta kooliastujad = 2026. aasta 0-aastased. Tegelikku koolivalikut, rännet ja koolipikendust prognoos ei arvesta. Kõik asulad kuuluvad arvestuses ühte koolipiirkonda.</p>
+</div></div>
+<script>const DATA={"rows":{"Alaküla":[1,0,0,1,2,0,2],"Allika":[0,0,0,0,0,0,0],"Aruküla":[0,0,1,1,1,0,0],"Emmu":[0,0,0,0,0,0,0],"Esivere":[0,0,1,0,0,0,1],"Haapsi":[1,0,1,0,0,0,0],"Hanila":[0,0,0,2,0,1,0],"Helmküla":[0,0,0,0,0,0,0],"Hõbeda":[0,0,0,0,0,0,0],"Hõbesalu":[0,0,0,0,0,0,0],"Hälvati":[0,0,0,0,0,1,0],"Irta":[1,0,0,0,2,1,2],"Iska":[0,0,0,0,0,0,0],"Jõeääre":[0,0,0,0,0,0,0],"Jänistvere":[0,0,0,0,0,0,1],"Järise":[0,0,0,0,0,0,0],"Järve":[0,0,1,0,1,0,1],"Kadaka":[0,0,0,0,0,0,0],"Kalli":[0,0,0,1,0,0,0],"Kanamardi":[0,0,0,0,0,0,0],"Karinõmme":[0,0,0,0,0,0,0],"Karuba":[0,0,1,0,0,0,0],"Karuse":[0,0,0,0,0,0,0],"Kaseküla":[0,0,0,0,0,0,0],"Kause":[0,0,1,0,0,0,1],"Keemu":[0,0,0,0,0,0,0],"Kelu":[0,0,1,0,1,0,0],"Kibura":[0,0,0,0,0,0,0],"Kidise":[0,0,0,0,0,0,0],"Kiisamaa":[0,0,0,0,0,0,0],"Kilgi":[0,0,0,0,0,0,0],"Kinksi":[0,1,0,0,0,0,0],"Kirbla":[1,2,0,1,3,0,1],"Kirikuküla":[0,0,0,0,0,0,0],"Kiska":[0,0,0,0,1,0,0],"Kloostri":[0,0,0,1,0,2,0],"Kokuta":[0,0,0,0,0,0,0],"Koonga":[1,2,2,4,2,5,2],"Korju":[0,0,0,0,0,0,0],"Kuke":[0,0,0,0,0,0,0],"Kulli":[0,0,0,0,0,0,1],"Kunila":[0,0,0,0,0,0,0],"Kõera":[0,0,0,0,0,0,0],"Kõima":[0,0,0,0,0,0,0],"Kõmsi":[2,1,1,1,2,2,1],"Käru":[0,0,0,0,0,0,0],"Laulepa":[0,0,0,0,0,0,0],"Lautna":[0,0,0,1,0,0,0],"Lihula":[5,8,11,8,9,8,5],"Linnuse":[0,0,0,0,0,0,0],"Liustemäe":[0,0,0,0,0,0,0],"Lõo":[0,0,0,0,0,1,0],"Lõpe":[0,1,1,2,2,0,0],"Maade":[1,0,0,0,0,0,0],"Maikse":[0,0,0,0,0,0,0],"Massu":[1,0,0,0,0,0,0],"Matsalu":[0,0,0,0,0,0,0],"Matsi":[0,0,0,0,0,1,0],"Meelva":[0,0,0,0,0,0,0],"Mereäärse":[0,0,0,0,0,0,0],"Metsküla":[0,1,0,0,1,0,0],"Mihkli":[0,0,0,0,0,0,0],"Muriste":[0,0,0,0,2,0,0],"Mõisaküla":[0,0,0,0,0,0,0],"Mõtsu":[0,1,0,0,0,0,0],"Mäense":[0,0,0,0,0,0,0],"Mäliküla":[0,0,0,1,0,0,0],"Naissoo":[0,0,0,0,0,0,0],"Nedrema":[0,0,0,0,1,1,0],"Nehatu":[0,0,0,0,0,0,0],"Nurme":[0,0,0,0,0,0,0],"Nurmsi":[1,0,0,0,2,0,0],"Nõmme":[0,0,0,0,0,0,0],"Nätsi":[0,0,0,1,0,0,1],"Oidrema":[1,0,2,3,0,3,2],"Paadrema":[0,0,0,0,0,0,0],"Paatsalu":[0,1,1,0,0,0,1],"Pagasi":[0,0,0,0,0,0,0],"Paimvere":[0,0,0,0,0,1,0],"Pajumaa":[0,0,0,0,0,0,0],"Palatu":[0,0,0,0,0,0,0],"Parivere":[0,1,1,0,1,0,0],"Peanse":[0,0,0,0,0,0,0],"Peantse":[0,0,0,0,0,0,0],"Penijõe":[0,0,0,0,0,0,0],"Petaaluse":[1,0,0,0,0,1,0],"Piha":[0,0,0,1,0,0,0],"Piisu":[0,0,0,0,0,0,0],"Pikavere":[1,1,1,0,0,0,0],"Pivarootsi":[0,0,0,0,0,0,0],"Poanse":[2,0,0,0,0,0,0],"Rabavere":[1,0,0,1,1,0,1],"Raespa":[0,0,0,0,0,0,0],"Raheste":[0,0,0,1,0,0,0],"Rame":[0,0,0,0,0,0,0],"Rannaküla":[0,0,0,0,0,0,0],"Rannu":[0,0,0,0,0,0,0],"Rauksi":[0,0,0,0,0,0,0],"Ridase":[0,1,0,0,0,0,0],"Rooglaiu":[0,1,0,0,0,0,0],"Rootsi":[0,0,0,0,0,1,0],"Rootsi-Aruküla":[0,0,0,0,0,0,0],"Rumba":[0,0,0,0,0,0,0],"Rädi":[0,0,0,0,1,0,1],"Saare":[0,0,0,0,0,0,0],"Saastna":[0,0,1,0,0,0,0],"Salavere":[0,0,0,0,0,0,0],"Salevere":[0,1,1,0,0,2,0],"Saulepi":[0,0,0,0,0,0,0],"Seira":[0,1,0,1,0,0,0],"Seli":[0,0,0,0,0,0,0],"Selja":[0,0,0,0,0,0,0],"Sookalda":[0,0,0,0,0,0,0],"Soovälja":[0,0,0,1,0,0,0],"Tamba":[0,0,0,0,0,0,0],"Tamme":[0,0,0,0,0,0,0],"Tarva":[0,0,0,0,1,0,1],"Tiilima":[0,0,0,0,0,0,0],"Tuhu":[0,0,0,0,0,0,0],"Tuudi":[1,2,1,0,1,0,2],"Tõitse":[0,0,0,0,0,0,0],"Tõusi":[0,3,0,1,1,0,1],"Täpsi":[0,0,0,0,0,0,0],"Ullaste":[0,0,0,0,0,0,0],"Uluste":[0,0,0,0,0,0,0],"Ura":[0,0,0,1,0,0,0],"Urita":[0,0,0,0,0,0,0],"Vagivere":[0,0,0,0,0,0,1],"Vaiste":[0,0,0,0,0,0,0],"Valuste":[0,1,0,1,0,0,0],"Vanamõisa":[0,0,0,0,0,0,0],"Varbla":[0,2,2,0,2,0,2],"Vastaba":[1,0,0,0,0,0,0],"Vatla":[0,1,0,1,3,0,1],"Veltsa":[0,0,0,0,0,0,0],"Virtsu":[2,1,4,4,3,5,1],"Voose":[0,0,0,0,1,0,1],"Võhma":[0,0,0,0,0,0,0],"Võigaste":[0,0,0,0,0,0,0],"Võitra":[0,0,0,0,0,0,0],"Võrungi":[0,0,0,0,0,0,0],"Õhu":[0,0,0,0,0,0,0],"Äila":[0,0,0,0,0,0,0],"Ännikse":[0,0,0,0,0,0,0],"Joonuse":[0,0,0,0,0,0,0],"Kuhu":[0,0,0,0,0,0,0],"Kurese":[0,0,0,0,0,0,0],"Parasmaa":[0,0,0,0,0,0,0],"Õepa":[0,0,0,0,0,0,0],"Koeri":[0,0,0,0,0,0,0],"Mõisimaa":[0,0,0,0,0,0,0]},"assigned":{"Irta":"Koonga","Jänistvere":"Koonga","Nedrema":"Koonga","Iska":"Koonga","Karuba":"Koonga","Kiisamaa":"Koonga","Koonga":"Koonga","Maikse":"Koonga","Pikavere":"Koonga","Salavere":"Koonga","Võitra":"Koonga","Võrungi":"Koonga","Hõbeda":"Koonga","Joonuse":"Koonga","Järve":"Koonga","Kibura":"Koonga","Kuhu":"Koonga","Kurese":"Koonga","Kõima":"Koonga","Naissoo":"Koonga","Parasmaa":"Koonga","Tamme":"Koonga","Ura":"Koonga","Õepa":"Koonga","Järise":"Metsküla","Keemu":"Metsküla","Kõera":"Metsküla","Laulepa":"Metsküla","Liustemäe":"Metsküla","Matsalu":"Metsküla","Meelva":"Metsküla","Metsküla":"Metsküla","Petaaluse":"Metsküla","Poanse":"Metsküla","Saastna":"Metsküla","Salevere":"Metsküla","Ullaste":"Metsküla","Võigaste":"Metsküla","Virtsu":"Virtsu","Esivere":"Kõmsi","Hanila":"Kõmsi","Karuse":"Kõmsi","Kaseküla":"Kõmsi","Kause":"Kõmsi","Kinksi":"Kõmsi","Kokuta":"Kõmsi","Kuke":"Kõmsi","Kõmsi":"Kõmsi","Massu":"Kõmsi","Mõisaküla":"Kõmsi","Mäense":"Kõmsi","Ridase":"Kõmsi","Rooglaiu":"Kõmsi","Voose":"Kõmsi","Kiska":"Kõmsi","Linnuse":"Kõmsi","Lõo":"Kõmsi","Nehatu":"Kõmsi","Nurmsi":"Kõmsi","Pajumaa":"Kõmsi","Pivarootsi":"Kõmsi","Rame":"Kõmsi","Vatla":"Kõmsi","Äila":"Kõmsi","Kanamardi":"Varbla","Kidise":"Varbla","Koeri":"Varbla","Korju":"Varbla","Käru":"Varbla","Mõtsu":"Varbla","Paadrema":"Varbla","Rauksi":"Varbla","Sookalda":"Varbla","Tiilima":"Varbla","Tõusi":"Varbla","Täpsi":"Varbla","Ännikse":"Varbla","Hõbesalu":"Varbla","Muriste":"Varbla","Paatsalu":"Varbla","Tamba":"Varbla","Aruküla":"Varbla","Kilgi":"Varbla","Kulli":"Varbla","Maade":"Varbla","Matsi":"Varbla","Raespa":"Varbla","Rädi":"Varbla","Saare":"Varbla","Saulepi":"Varbla","Vaiste":"Varbla","Õhu":"Varbla","Allika":"Varbla","Haapsi":"Varbla","Helmküla":"Varbla","Kadaka":"Varbla","Mereäärse":"Varbla","Mäliküla":"Varbla","Nõmme":"Varbla","Piha":"Varbla","Raheste":"Varbla","Rannaküla":"Varbla","Selja":"Varbla","Varbla":"Varbla","Jõeääre":"Lihula","Kirbla":"Lihula","Lautna":"Lihula","Mõisimaa":"Lihula","Rannu":"Lihula","Rootsi":"Lihula","Rootsi-Aruküla":"Lihula","Rumba":"Lihula","Seira":"Lihula","Uluste":"Lihula","Vanamõisa":"Lihula","Võhma":"Lihula","Kelu":"Lihula","Kloostri":"Lihula","Pagasi":"Lihula","Seli":"Lihula","Parivere":"Lihula","Alaküla":"Lihula","Hälvati":"Lihula","Kirikuküla":"Lihula","Penijõe":"Lihula","Soovälja":"Lihula","Valuste":"Lihula","Kunila":"Lihula","Nurme":"Lihula","Peanse":"Lihula","Tuhu":"Lihula","Tuudi":"Lihula","Vagivere":"Lihula","Kalli":"Lihula","Lõpe":"Lihula","Nätsi":"Lihula","Paimvere":"Lihula","Palatu":"Lihula","Peantse":"Lihula","Rabavere":"Lihula","Emmu":"Lihula","Mihkli":"Lihula","Piisu":"Lihula","Vastaba":"Lihula","Karinõmme":"Lihula","Oidrema":"Lihula","Tõitse":"Lihula","Tarva":"Lihula","Urita":"Lihula","Veltsa":"Lihula","Lihula":"Lihula"}};
+const $=id=>document.getElementById(id);
+const regs=['Koonga','Metsküla','Virtsu','Kõmsi','Varbla','Lihula'];
+const colors={Koonga:'#13a386',Metsküla:'#9d57c7',Virtsu:'#219fbe',Kõmsi:'#d96d57',Varbla:'#d0a12e',Lihula:'#3265ba'};
+const names=Object.keys(DATA.assigned).filter(n=>regs.includes(DATA.assigned[n])).sort((a,b)=>a.localeCompare(b,'et'));
+for(const r of regs){let o=document.createElement('option');o.value=r;o.textContent=r;$('region').append(o)}
+const age=year=>2033-year;
+const values=n=>DATA.rows[n]||[0,0,0,0,0,0,0];
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const total=ns=>{let t=Array(7).fill(0);for(let n of ns)values(n).forEach((v,i)=>t[i]+=v);return t};
+function selectedNames(){let r=$('region').value,q=$('search').value.toLocaleLowerCase('et').trim();return names.filter(n=>(!r||DATA.assigned[n]===r)&&n.toLocaleLowerCase('et').includes(q))}
+function td(v){return '<td>'+v+'</td>'}
+function table(headers,rows){return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(td).join('')+'</tr>').join('')+'</tbody></table>'}
+function render(){
+let ns=selectedNames(), t=total(ns), year=+$('year').value;
+$('yearLabel').textContent=year;$('selected').textContent=t[age(year)];$('total').textContent=sum(t);
+$('villages').textContent=ns.length;$('zeros').textContent=ns.filter(n=>sum(values(n))===0).length;
+let rdata=regs.map(r=>({r,vals:total(ns.filter(n=>DATA.assigned[n]===r))}));
+let rows=rdata.filter(x=>!$('region').value||$('region').value===x.r).map(x=>[x.r,...Array.from({length:7},(_,i)=>x.vals[6-i]),sum(x.vals)]);
+rows.push(['KOKKU',...Array.from({length:7},(_,i)=>t[6-i]),sum(t)]);
+$('yearTable').innerHTML=table(['Piirkond',...Array.from({length:7},(_,i)=>2027+i),'Kokku'],rows);
+$('villageTable').innerHTML=table(['Asula','Koolipiirkond','0 a','1 a','2 a','3 a','4 a','5 a','6 a','Kokku',year+' 1. kl'],ns.map(n=>[n,DATA.assigned[n],...values(n),sum(values(n)),values(n)[age(year)]]));
+renderChart(rdata);
+}
+function renderChart(rdata){
+const order=['Koonga','Metsküla','Virtsu','Kõmsi','Varbla','Lihula'];
+const palette={Koonga:'#2b7bbb',Metsküla:'#23a58b',Virtsu:'#f28b35',Kõmsi:'#9862bd',Varbla:'#e35b65',Lihula:'#273e5d'};
+const chosen=+$('year').value;
+const sums=Array.from({length:7},(_,i)=>rdata.reduce((s,x)=>s+x.vals[6-i],0));
+const peak=Math.max(1,...sums),step=peak<=10?2:peak<=25?5:10;
+const max=Math.max(step,Math.ceil(peak/step)*step);
+const W=1080,H=420,L=60,R=22,T=32,B=350;
+const y=v=>B-v/max*(B-T);
+let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Filtritega seotud kooliastujate virnastatud tulpdiagramm aastate 2027 kuni 2033 kohta">`;
+for(let v=0;v<=max;v+=step){const yy=y(v);svg+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="#e0e6ed"/><text x="${L-12}" y="${yy+5}" text-anchor="end" font-size="14" fill="#253448">${v}</text>`;}
+svg+=`<text x="17" y="${(T+B)/2}" transform="rotate(-90 17 ${(T+B)/2})" text-anchor="middle" font-size="14" fill="#253448">Laste arv</text>`;
+for(let i=0;i<7;i++){
+ const yr=2027+i,xx=L+44+i*140,bw=91;let acc=0;
+ if(yr===chosen)svg+=`<rect x="${xx-8}" y="${T-12}" width="${bw+16}" height="${B-T+24}" rx="8" fill="#eaf1f8"/>`;
+ for(const r of order){const item=rdata.find(x=>x.r===r),v=item?item.vals[6-i]:0;if(v){const yy=y(acc+v),hh=y(acc)-yy;svg+=`<rect x="${xx}" y="${yy}" width="${bw}" height="${hh}" fill="${palette[r]}"><title>${yr} · ${r}: ${v} last</title></rect>`;}acc+=v;}
+ svg+=`<text x="${xx+bw/2}" y="${Math.max(T-1,y(acc)-9)}" text-anchor="middle" font-weight="700" font-size="17" fill="#19334c">${acc}</text><text x="${xx+bw/2}" y="${B+29}" text-anchor="middle" font-size="15" font-weight="${yr===chosen?700:400}" fill="#19334c">${yr}</text>`;
+ svg+=`<rect class="chart-year" data-year="${yr}" x="${xx-8}" y="${T-12}" width="${bw+16}" height="${B-T+57}" fill="transparent" style="cursor:pointer"><title>Vali ${yr}. aasta</title></rect>`;
+}
+svg+='</svg>';
+$('chart').innerHTML=svg;
+$('legend').innerHTML=order.filter(r=>rdata.some(x=>x.r===r&&sum(x.vals)>0)).map(r=>`<span><i class="dot" style="background:${palette[r]}"></i>${r}</span>`).join('')||'<span>Valitud asulates ei ole selles vanuserühmas lapsi.</span>';
+$('chart').querySelectorAll('.chart-year').forEach(el=>el.addEventListener('click',()=>{$('year').value=el.dataset.year;render();drawGeo();}));
+}
+for(const id of ['region','year','search'])$(id).addEventListener(id==='search'?'input':'change',render);
+$('year').addEventListener('input',render);
+$('csv').addEventListener('click',()=>{
+let ns=selectedNames(),year=+$('year').value;
+let rows=[['Asula','Koolipiirkond','0 a','1 a','2 a','3 a','4 a','5 a','6 a','Kokku',year+' 1. klassi'],...ns.map(n=>[n,DATA.assigned[n],...values(n),sum(values(n)),values(n)[age(year)]])];
+let csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(';')).join('\r\n');
+let blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='laaneranna_koolivorgu_andmed_'+year+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+render();
+
+// Geographic polygons are sourced from EHAK GeoJSON, not invented coordinates.
+let mapFeatures=[], mapZoom=1, mapCenter=[500,300], mapLoaded=false;
+const mapColors=colors;
+const mapStatus=$('mapStatus');
+const geoSource='https://raw.githubusercontent.com/buildig/EHAK/master/geojson/asustusyksus.json';
+const mapKeys=['ANIMI','animi','NIMI','nimi','name','NAME'];
+function featureName(f){for(let k of mapKeys){if(f.properties&&f.properties[k])return String(f.properties[k]).replace(/ (küla|alevik|linn)$/i,'').trim()}return ''}
+function walkCoords(g,callback){if(!g)return;function rec(a){if(typeof a?.[0]==='number'&&typeof a?.[1]==='number'){callback(a[0],a[1]);return}if(Array.isArray(a))a.forEach(rec)}rec(g.coordinates)}
+function featureCenter(f){let sx=0,sy=0,n=0;walkCoords(f.geometry,(x,y)=>{sx+=x;sy+=y;n++});return n?[sx/n,sy/n]:[0,0]}
+function featureMunicipality(f){const p=f.properties||{};return String(p.ONIMI||p.onimi||'').trim()}
+function featureCode(f){const p=f.properties||{};return String(p.AKOOD||p.akood||'').trim()}
+const verifiedCodes={Metsküla:'4929',Nurme:'5464'};
+function extractFeatures(obj){
+ let fs=obj.type==='FeatureCollection'?obj.features:obj.type==='Feature'?[obj]:[];
+ // Never infer municipality from coordinates or name alone.
+ let candidates=fs.filter(f=>names.includes(featureName(f))&&featureMunicipality(f)==='Lääneranna vald');
+ let byName=new Map();
+ for(let f of candidates){
+  let n=featureName(f),code=verifiedCodes[n];
+  if(code&&featureCode(f)!==code)continue;
+  if(!byName.has(n))byName.set(n,f);else byName.set(n,null);
+ }
+ return [...byName.entries()].filter(([n,f])=>f).map(([n,f])=>({...f,_village:n}));
+}
+function mapValue(n){let v=DATA.rows[n]||[0,0,0,0,0,0,0];return $('mapMetric').value==='total'?v.reduce((a,b)=>a+b,0):v[age(+$('year').value)]}
+function mapProject(lon,lat){return [(lon-23.23)*700,(58.99-lat)*780]}
+function mapPath(g){let d='';const ring=(pts)=>{pts.forEach((p,i)=>{let [x,y]=mapProject(p[0],p[1]);d+=(i?'L':'M')+x.toFixed(1)+','+y.toFixed(1)});d+='Z'};if(g.type==='Polygon')g.coordinates.forEach(ring);if(g.type==='MultiPolygon')g.coordinates.forEach(poly=>poly.forEach(ring));return d}
+function escapeMap(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function drawGeo(){if(!mapLoaded)return;let active=new Set(selectedNames()),shown=mapFeatures.filter(f=>active.has(f._village));let max=Math.max(1,...shown.map(f=>mapValue(f._village)));let shapes=shown.map(f=>{let n=f._village,v=mapValue(n),col=mapColors[DATA.assigned[n]]||'#aaa';let opacity=v===0?.16:.35+.6*Math.sqrt(v/max);return `<path d="${mapPath(f.geometry)}" data-village="${escapeMap(n)}" fill="${col}" fill-opacity="${opacity.toFixed(2)}"/>`}).join('');let labels='';if($('mapLabels').checked){for(let n of regs){let f=mapFeatures.find(f=>f._village===n);if(!f)continue;let [lon,lat]=featureCenter(f),[x,y]=mapProject(lon,lat);labels+=`<text class="map-label" x="${x}" y="${y}" text-anchor="middle">${escapeMap(n)}</text>`}}
+let vbw=1040/mapZoom,vbh=620/mapZoom,cx=520,cy=310;let view=`${cx-vbw/2} ${cy-vbh/2} ${vbw} ${vbh}`;$('mapCanvas').className='';$('mapCanvas').innerHTML=`<svg viewBox="${view}" role="img" aria-label="Lääneranna asulate kaart, värvid koolipiirkondade järgi"><rect width="1040" height="620" fill="#edf4f5"/>${shapes}${labels}</svg>`;document.querySelectorAll('#mapCanvas path[data-village]').forEach(el=>el.addEventListener('click',()=>{let n=el.dataset.village,v=DATA.rows[n]||[];$('mapTip').hidden=false;$('mapTip').innerHTML=`<button id="closeMapTip">×</button><b>${escapeMap(n)}</b><br>${escapeMap(DATA.assigned[n])} koolipiirkond<br>0–6-aastaseid: ${v.reduce((a,b)=>a+b,0)}<br>${$('year').value}. aastal 1. klassi: ${v[age(+$('year').value)]}`;$('closeMapTip').onclick=()=>$('mapTip').hidden=true}));mapStatus.textContent=`Kaardil ${shown.length} Lääneranna valla asulat; ${names.length-mapFeatures.length} asula geomeetria on puudu või mitmeti tõlgendatav. Kontroll: ONIMI = Lääneranna vald; Metsküla 4929, Nurme 5464. Allikas: EHAK asustusüksuste GeoJSON. Filtrid ja aastaliugur mõjutavad ka kaarti.`}
+async function acceptGeo(obj){let fs=extractFeatures(obj);if(!fs.length)throw Error('Ei leidnud sobivaid Lääneranna asulate geomeetriaid. Kontrolli, et fail oleks EHAK asustusüksuste GeoJSON.');mapFeatures=fs;mapLoaded=true;drawGeo()}
+async function loadGeo(){try{let r=await fetch(geoSource);if(!r.ok)throw Error('HTTP '+r.status);await acceptGeo(await r.json())}catch(e){mapStatus.textContent='EHAK geomeetria automaatne laadimine ebaõnnestus ('+e.message+'). Laadi GeoJSON käsitsi; olemasolevad graafikud ja tabelid töötavad edasi.';$('mapCanvas').textContent='Kaardipiire ei saanud laadida. Kasuta ülal GeoJSON-faili valikut.'}}
+$('geoUpload').addEventListener('change',async e=>{try{let file=e.target.files[0];if(file)await acceptGeo(JSON.parse(await file.text()))}catch(err){mapStatus.textContent='Faili laadimine ebaõnnestus: '+err.message}});
+$('mapMetric').addEventListener('change',drawGeo);$('mapLabels').addEventListener('change',drawGeo);
+$('mapPlus').onclick=()=>{mapZoom=Math.min(4,mapZoom*1.3);drawGeo()};$('mapMinus').onclick=()=>{mapZoom=Math.max(1,mapZoom/1.3);drawGeo()};$('mapReset').onclick=()=>{mapZoom=1;drawGeo()};
+$('year').addEventListener('input',drawGeo);$('region').addEventListener('change',drawGeo);$('search').addEventListener('input',drawGeo);
+loadGeo();
+</script></body></html>
